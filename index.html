@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI-Based Resume Skill Analyzer</title>
+<style>
+:root{--bg:#f7f8fc;--surface:#fff;--text:#161a2b;--muted:#5b6179;--accent:#5b4bff;--accent2:#00b7a8;--border:#e3e6f1;--good:#12a36b;--bad:#e5484d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1020;--surface:#171a30;--text:#eef0fb;--muted:#9aa0bf;--accent:#8b7dff;--accent2:#2ed3c3;--border:#272b4a;--good:#38d39a;--bad:#ff6b70;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1020;--surface:#171a30;--text:#eef0fb;--muted:#9aa0bf;--accent:#8b7dff;--accent2:#2ed3c3;--border:#272b4a;--good:#38d39a;--bad:#ff6b70;color-scheme:dark}
+html{scroll-behavior:smooth;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bg);border-bottom:1px solid var(--border);z-index:5}
+nav{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{font-weight:800;letter-spacing:-.02em}.logo span{color:var(--accent)}
+nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0}
+nav a{color:var(--muted);text-decoration:none;font-size:.92rem}nav a:hover{color:var(--text)}
+@media(max-width:640px){nav ul{display:none}}
+.hero{padding:84px 0 64px;text-align:center}
+.badge{display:inline-block;padding:5px 14px;border:1px solid var(--border);background:var(--surface);border-radius:99px;font-size:.8rem;color:var(--muted)}
+h1{font-size:clamp(2.2rem,6vw,4rem);line-height:1.1;letter-spacing:-.035em;margin:20px 0 16px}
+h1 em{font-style:normal;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{max-width:640px;margin:0 auto 28px;color:var(--muted);font-size:1.1rem}
+.btn{display:inline-block;padding:12px 24px;border-radius:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:600;border:0;cursor:pointer;font-size:1rem}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--border);margin-left:8px}
+.stats{display:flex;justify-content:center;gap:40px;margin-top:48px;flex-wrap:wrap}
+.stats b{display:block;font-size:1.8rem;letter-spacing:-.02em}.stats span{color:var(--muted);font-size:.85rem}
+section{padding:64px 0}
+h2{font-size:clamp(1.6rem,4vw,2.2rem);letter-spacing:-.025em;margin:0 0 8px;text-align:center}
+.sub{text-align:center;color:var(--muted);margin:0 auto 36px;max-width:560px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px}
+.card h3{margin:10px 0 6px;font-size:1.05rem}.card p{margin:0;color:var(--muted);font-size:.93rem}
+.ico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;font-size:1.2rem;background:color-mix(in srgb,var(--accent) 14%,transparent)}
+.num{width:34px;height:34px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700}
+.demo{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:24px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.cols{grid-template-columns:1fr}}
+label{font-weight:600;font-size:.88rem;display:block;margin-bottom:6px}
+textarea{width:100%;height:170px;resize:vertical;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit;font-size:.9rem}
+.actions{margin:16px 0;display:flex;gap:8px;flex-wrap:wrap}
+#result{display:none;margin-top:8px;border-top:1px solid var(--border);padding-top:20px}
+.score{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.ring{--p:0;width:96px;height:96px;border-radius:50%;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--border) 0);display:grid;place-items:center}
+.ring i{font-style:normal;width:74px;height:74px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-weight:800;font-size:1.3rem}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+.chip{padding:3px 11px;border-radius:99px;font-size:.8rem;border:1px solid}
+.chip.ok{color:var(--good);border-color:var(--good)}.chip.no{color:var(--bad);border-color:var(--bad)}.chip.extra{color:var(--muted);border-color:var(--border)}
+.note{font-size:.8rem;color:var(--muted)}
+.stack{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.stack span{background:var(--surface);border:1px solid var(--border);padding:8px 16px;border-radius:99px;font-size:.9rem}
+main{display:flex;flex-direction:column}main>.hero{order:0;width:100%}#demo{order:1}#how{order:2}#features{order:3}#tech{order:4}
+footer{border-top:1px solid var(--border);padding:28px 0;text-align:center;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+<header><div class="wrap"><nav>
+<div class="logo">Resume<span>Skill</span>AI</div>
+<ul><li><a href="#demo">Try it</a></li><li><a href="#how">How it works</a></li><li><a href="#features">Features</a></li><li><a href="#tech">Tech</a></li></ul>
+<a class="btn" href="#demo" style="padding:8px 16px;font-size:.88rem">Try demo</a>
+</nav></div></header>
+
+<main>
+<div class="wrap hero">
+<span class="badge">✨ AI-powered career tool</span>
+<h1>AI-Based Resume <em>Skill</em> Analyzer</h1>
+<p class="lead">The AI-Based Resume Skill Analyzer reads your resume, extracts your skills, and compares them with any job description, so you can close gaps before you apply.</p>
+<a class="btn" href="#demo">Analyze my resume</a><a class="btn ghost" href="#how">See how it works</a>
+<div class="stats"><div><b>150+</b><span>skills recognized</span></div><div><b>&lt; 2 s</b><span>per analysis</span></div><div><b>100%</b><span>private in this demo</span></div></div>
+</div>
+
+<section id="how"><div class="wrap">
+<h2>How it works</h2><p class="sub">Three simple steps from raw resume to actionable insights.</p>
+<div class="grid">
+<div class="card"><div class="num">1</div><h3>Upload or paste</h3><p>Provide your resume text along with the job description you are targeting.</p></div>
+<div class="card"><div class="num">2</div><h3>AI extracts skills</h3><p>Natural language processing identifies technical and soft skills and groups them by category.</p></div>
+<div class="card"><div class="num">3</div><h3>Get your match report</h3><p>See a match score, matched skills, and the gaps worth learning or highlighting.</p></div>
+</div></div></section>
+
+<section id="features" style="background:var(--surface);border-block:1px solid var(--border)"><div class="wrap">
+<h2>Features</h2><p class="sub">Everything you need to tailor a resume with confidence.</p>
+<div class="grid">
+<div class="card" style="background:var(--bg)"><div class="ico">🧠</div><h3>Smart skill extraction</h3><p>Detects skills from free-form text, including variations like “JS” and “JavaScript”.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">🎯</div><h3>Job match score</h3><p>Quantifies how well your resume fits a specific role from 0 to 100.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">🔍</div><h3>Skill gap analysis</h3><p>Highlights required skills that are missing from your resume.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">📚</div><h3>Learning suggestions</h3><p>Points you to the skills that will raise your match the most.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">🗂️</div><h3>Category breakdown</h3><p>Groups skills into languages, frameworks, data, cloud, and soft skills.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">🔒</div><h3>Privacy first</h3><p>Your resume stays on your device in this demo. Nothing is uploaded.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">🤖</div><h3>AI Recommendations</h3><p>Recommend skills to learn.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">🧭</div><h3>Career Suggestions</h3><p>Suggest suitable job roles based on the resume.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">💼</div><h3>Experience Analysis</h3><p>Analyze internships and work experience.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">🎓</div><h3>Education Analysis</h3><p>Analyze qualifications and academic background.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">⭐</div><h3>Resume Score</h3><p>Generate an overall resume score.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">📊</div><h3>Dashboard</h3><p>Display results using charts and graphs.</p></div>
+<div class="card" style="background:var(--bg)"><div class="ico">⬇️</div><h3>Download Report</h3><p>Download the resume analysis report.</p></div>
+</div></div></section>
+
+<section id="demo"><div class="wrap">
+<h2>Try the analyzer</h2><p class="sub">Upload your resume (PDF, DOCX, JPG or PNG), choose a job role, then click Analyze.</p>
+<div class="demo">
+<div class="cols">
+<div><label>Your resume</label><div style="height:170px;border:2px dashed var(--border);border-radius:10px;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:12px;text-align:center"><label for="pdf" class="btn" style="padding:10px 20px;margin:0;cursor:pointer">📎 Upload resume</label><input type="file" id="pdf" accept=".pdf,.docx,.jpg,.jpeg,.png,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" hidden><span class="note" id="pdfstatus">No file chosen</span></div><div id="pdferr" role="alert" hidden style="margin-top:12px;border:1px solid var(--bad);border-radius:10px;padding:14px;font-size:.88rem"></div><textarea id="resume" hidden></textarea></div>
+<div><label for="jd">Job role</label><select id="jd" style="width:100%;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font:inherit"><option value="">Select a job role…</option></select><div class="note" id="rolenote" style="margin-top:12px"></div></div>
+</div>
+<div class="actions"><button class="btn" id="go">Analyze</button><button class="btn ghost" id="sample" style="margin-left:0">Load sample</button></div>
+<div id="result">
+<div class="score"><div class="ring" id="ring"><i id="pct">0%</i></div><div><h3 style="margin:0" id="verdict"></h3><div class="note" id="count"></div></div></div>
+<label style="margin-top:18px">✅ Matched skills</label><div class="chips" id="matched"></div>
+<label>❗ Missing skills</label><div class="chips" id="missing"></div>
+<label>➕ Other skills found in your resume</label><div class="chips" id="extra"></div>
+<label>🤖 AI recommendations: skills to learn</label><ol id="recs" class="note" style="margin:6px 0 16px;padding-left:20px"></ol>
+<label>🧭 Career suggestions</label><div id="careers" style="margin:8px 0 16px"></div>
+<div class="cols"><div><label>💼 Experience analysis</label><div id="exp" class="note" style="margin:6px 0 16px"></div></div><div><label>🎓 Education analysis</label><div id="edu" class="note" style="margin:6px 0 16px"></div></div></div>
+<label>📊 Dashboard</label><div id="dash" style="margin:8px 0 18px"></div>
+<button class="btn" id="dl">⬇ Download PDF report</button> <span class="note" id="dlmsg"></span>
+</div>
+<p class="note">This web demo uses a keyword-based skill dictionary to illustrate the workflow. The full project uses NLP/ML models for deeper extraction.</p>
+</div></div></section>
+
+<section id="tech" style="background:var(--surface);border-top:1px solid var(--border)"><div class="wrap">
+<h2>Built with</h2><p class="sub">A typical stack for the project. Edit this list to match yours.</p>
+<div class="stack"><span>Python</span><span>spaCy / NLTK</span><span>Scikit-learn</span><span>Transformers</span><span>Flask / FastAPI</span><span>PDF parsing</span><span>HTML · CSS · JS</span></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">© 2026 AI-Based Resume Skill Analyzer · Academic project</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const SK={"Python":["python"],"Java":["java"],"JavaScript":["javascript","js"],"TypeScript":["typescript"],"C++":["c++"],"SQL":["sql","mysql","postgresql"],"React":["react","reactjs"],"Node.js":["node.js","nodejs","node"],"HTML/CSS":["html","css"],"Flask":["flask"],"Django":["django"],"Machine Learning":["machine learning","ml"],"Deep Learning":["deep learning","neural network"],"NLP":["nlp","natural language processing"],"TensorFlow":["tensorflow"],"PyTorch":["pytorch"],"Pandas":["pandas"],"NumPy":["numpy"],"Scikit-learn":["scikit-learn","sklearn"],"Data Analysis":["data analysis","analytics"],"Data Visualization":["tableau","power bi","matplotlib","data visualization"],"AWS":["aws","amazon web services"],"Azure":["azure"],"Docker":["docker"],"Kubernetes":["kubernetes","k8s"],"Git":["git","github"],"REST APIs":["rest api","restful","api"],"Linux":["linux"],"Agile":["agile","scrum"],"Communication":["communication"],"Teamwork":["teamwork","collaboration"],"Leadership":["leadership"],"Problem Solving":["problem solving","problem-solving"]};
+const add=(...a)=>a.forEach(x=>{const p=x.split("|");SK[p[0]]=p.length>1?p.slice(1):[p[0].toLowerCase()]});
+add("Spring Boot|spring boot|spring","OOP|oop|object-oriented","Data Structures|data structures|algorithms","Excel|excel|ms excel","Statistics|statistics|statistical",
+"AutoCAD","Revit","STAAD Pro|staad pro|staad","Structural Analysis|structural analysis|structural design","RCC Design|rcc design|rcc|reinforced concrete","Surveying|surveying|survey","Site Supervision|site supervision|site management","Quantity Estimation|quantity estimation|boq|bill of quantities","Cost Estimation|cost estimation|costing","Project Planning|project planning|scheduling","MS Project|ms project|primavera","Building Codes|building codes|building code|is codes","Contract Management|contract management|contracts","3D Modeling|3d modeling|3d modelling|sketchup","Material Testing|material testing","Safety Management|safety management|site safety|hse","Budgeting|budgeting|budget",
+"SolidWorks","CATIA","Ansys","GD&T|gd&t","CAD|cad","CAM|cam|cnc programming","CNC|cnc","Thermodynamics","Heat Transfer|heat transfer","Fluid Mechanics|fluid mechanics","Manufacturing Processes|manufacturing processes|manufacturing","Production Planning|production planning","Lean Six Sigma|lean six sigma|six sigma|lean","Quality Control|quality control|qc","Inspection|inspection|metrology","Root Cause Analysis|root cause analysis|rca","FMEA|fmea","Preventive Maintenance|preventive maintenance|maintenance","Troubleshooting|troubleshooting","HVAC Design|hvac design|hvac","Load Calculation|load calculation|cooling load",
+"Vehicle Dynamics|vehicle dynamics","Engine Design|engine design|ic engine","Powertrain|powertrain","CAN Protocol|can protocol|can bus","Diagnostics|diagnostics|obd","Battery Systems|battery systems|battery","BMS|bms|battery management","Electric Motors|electric motors|electric motor|motor control","Charging Systems|charging systems|charging","Vehicle Testing|vehicle testing","Automotive Standards|automotive standards|iso 26262|iatf 16949","Customer Service|customer service|customer handling","MATLAB|matlab|simulink","Embedded Systems|embedded systems|embedded","Assembly Line|assembly line|assembly",
+"Accounting|accounting|bookkeeping","Tally|tally","GST|gst","Taxation|taxation|income tax|tax filing","Auditing|auditing|audit","Financial Analysis|financial analysis|financial modeling|financial modelling","Financial Reporting|financial reporting|balance sheet","Forecasting|forecasting","Payroll|payroll","Recruitment|recruitment|talent acquisition","Employee Relations|employee relations|employee engagement","HRIS|hris|hr systems","Digital Marketing|digital marketing","SEO|seo","Social Media|social media","Content Marketing|content marketing|copywriting","Market Research|market research","Business Analysis|business analysis|requirements gathering","Stakeholder Management|stakeholder management","Compliance|compliance|regulatory");
+const BRANCHES={"Computer Science Engineering (CSE)":{"Software Developer":["Java","Python","Data Structures","OOP","SQL","Git","Problem Solving"],"Web Developer":["HTML/CSS","JavaScript","React","Node.js","REST APIs","Git"],"Python Developer":["Python","Django","Flask","SQL","REST APIs","Git"],"Data Analyst":["SQL","Excel","Python","Pandas","Data Analysis","Data Visualization","Statistics"],"AI/ML Engineer":["Python","Machine Learning","Deep Learning","NLP","TensorFlow","PyTorch","Scikit-learn"],"Java Developer":["Java","Spring Boot","OOP","SQL","REST APIs","Git"]},
+"Civil Engineering":{"Civil Site Engineer":["Site Supervision","AutoCAD","Surveying","Quantity Estimation","Safety Management","Material Testing"],"Structural Engineer":["Structural Analysis","STAAD Pro","RCC Design","AutoCAD","Building Codes","Revit"],"AutoCAD Designer":["AutoCAD","3D Modeling","Revit","Building Codes","Communication"],"Construction Project Manager":["Project Planning","MS Project","Budgeting","Contract Management","Safety Management","Leadership","Communication"],"Quantity Surveyor":["Quantity Estimation","Cost Estimation","Contract Management","AutoCAD","Excel","Building Codes"],"Building Design Engineer":["Revit","AutoCAD","Structural Analysis","Building Codes","3D Modeling","STAAD Pro"]},
+"Mechanical Engineering":{"Mechanical Design Engineer":["SolidWorks","CATIA","GD&T","Ansys","AutoCAD","Thermodynamics"],"Production Engineer":["Manufacturing Processes","Production Planning","Lean Six Sigma","Quality Control","Root Cause Analysis","Teamwork"],"Quality Control Engineer":["Quality Control","Inspection","GD&T","Lean Six Sigma","Root Cause Analysis","FMEA"],"Maintenance Engineer":["Preventive Maintenance","Troubleshooting","Root Cause Analysis","Safety Management","Thermodynamics"],"CAD/CAM Engineer":["CAD","CAM","CNC","SolidWorks","CATIA","GD&T"],"HVAC Engineer":["HVAC Design","Load Calculation","Thermodynamics","Heat Transfer","AutoCAD","Fluid Mechanics"]},
+"Automobile Engineering":{"Automobile Design Engineer":["CATIA","SolidWorks","Vehicle Dynamics","Ansys","GD&T","Engine Design"],"Automotive Service Engineer":["Diagnostics","Troubleshooting","Preventive Maintenance","Customer Service","Engine Design"],"Vehicle Testing Engineer":["Vehicle Testing","Vehicle Dynamics","Diagnostics","CAN Protocol","MATLAB","Automotive Standards"],"Automobile Production Engineer":["Assembly Line","Production Planning","Lean Six Sigma","Quality Control","Manufacturing Processes"],"Automotive Quality Engineer":["Quality Control","FMEA","Automotive Standards","Root Cause Analysis","Inspection","Lean Six Sigma"],"EV (Electric Vehicle) Engineer":["Battery Systems","BMS","Electric Motors","Charging Systems","Powertrain","MATLAB","Embedded Systems"]},
+"Commerce":{"Accountant":["Accounting","Tally","GST","Taxation","Financial Reporting","Excel"],"Financial Analyst":["Financial Analysis","Excel","Forecasting","Financial Reporting","Data Analysis","Communication"],"Human Resource (HR) Executive":["Recruitment","Employee Relations","Payroll","HRIS","Communication","Compliance"],"Marketing Executive":["Digital Marketing","SEO","Social Media","Content Marketing","Market Research","Communication"],"Business Analyst":["Business Analysis","SQL","Excel","Data Visualization","Stakeholder Management","Communication"],"Tax Consultant":["Taxation","GST","Auditing","Compliance","Accounting","Tally"]}};
+const ROLES={};let rk=0;const jsel=document.getElementById("jd");
+Object.entries(BRANCHES).forEach(([b,rs],i)=>{const g=document.createElement("optgroup");g.label=(i+1)+". "+b;Object.entries(rs).forEach(([n,s])=>{ROLES[n]=s;const o=document.createElement("option");o.value=n;o.textContent=(++rk)+". "+n;g.appendChild(o)});jsel.appendChild(g)});
+const esc=s=>s.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+function find(t){t=t.toLowerCase();return Object.keys(SK).filter(k=>SK[k].some(a=>new RegExp("(^|[^a-z0-9+#])"+esc(a)+"($|[^a-z0-9+#])").test(t)))}
+function chips(id,arr,cls){const el=document.getElementById(id);el.textContent="";if(!arr.length){el.innerHTML='<span class="note">None</span>';return}arr.forEach(s=>{const c=document.createElement("span");c.className="chip "+cls;c.textContent=s;el.appendChild(c)})}
+const $=id=>document.getElementById(id);
+const bar=(l,v)=>`<div style="display:flex;align-items:center;gap:10px;margin:6px 0;font-size:.85rem"><span style="width:130px;flex:none">${l}</span><div style="flex:1;height:10px;background:var(--border);border-radius:9px"><div style="width:${v}%;height:100%;border-radius:9px;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div></div><b style="width:44px;text-align:right">${v}%</b></div>`;
+const strip=h=>h.replace(/<br>/g,"; ").replace(/<[^>]+>/g,"");
+let REPORT="";
+function extras(m,x,p){
+const t=$("resume").value.toLowerCase(),role=$("jd").value,r=find(t),cnt=re=>(t.match(re)||[]).length;
+const sec=[[/education|academic/,"Education"],[/experience|internship/,"Experience"],[/skills?\b/,"Skills"],[/project/,"Projects"],[/@/,"Contact email"],[/certif|award|achievement/,"Certifications"]];
+const lack=sec.filter(s=>!s[0].test(t)).map(s=>s[1]);
+const recs=x.map(s=>"Learn <b>"+s+"</b>, required for "+role).concat(lack.map(s=>"Add <b>"+s+"</b> to your resume"));
+$("recs").innerHTML=recs.length?recs.map(s=>"<li>"+s+"</li>").join(""):"<li>Great! You cover every required skill and key section.</li>";
+const cs=[];Object.entries(BRANCHES).forEach(([b,rs])=>Object.entries(rs).forEach(([n,s])=>cs.push([n,b,Math.round(s.filter(k=>r.includes(k)).length/s.length*100)])));
+cs.sort((a,b)=>b[2]-a[2]);
+$("careers").innerHTML=cs[0][2]?cs.slice(0,3).map(c=>bar(c[0],c[2])).join(""):"<span class='note'>No known skills detected, so no roles can be suggested.</span>";
+const yrs=Math.max(0,...[...t.matchAll(/(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)/g)].map(a=>+a[1])),it=cnt(/intern/g),pj=cnt(/project/g),vb=cnt(/\b(worked|developed|designed|managed|built|led|implemented|created)\b/g);
+const es=Math.min(100,Math.round(yrs*20+Math.min(it,2)*20+Math.min(pj,4)*10+Math.min(vb,5)*4));
+$("exp").innerHTML="Level: <b>"+(es<30?"Entry level / fresher":es<60?"Early career":"Experienced")+"</b><br>Years mentioned: "+yrs+"<br>Internship mentions: "+it+"<br>Project mentions: "+pj;
+const L=[["Doctorate",100,/\b(ph\.?d|doctorate)\b/],["Master’s degree",90,/\b(m\.?tech|mba|m\.?sc|m\.?com|master(s|'s)?\b)/],["Bachelor’s degree",75,/\b(b\.?tech|b\.e\b|b\.?sc|b\.?com|bba|bachelor)/],["Diploma",55,/\bdiploma/],["Higher secondary (12th)",35,/\b(12th|hsc|higher secondary)/],["Secondary (10th)",20,/\b(10th|ssc|matriculation)/]];
+const lv=L.find(l=>l[2].test(t)),cg=t.match(/(?:cgpa|gpa)\D{0,12}(\d+(?:\.\d+)?)/),pc=t.match(/(\d{2}(?:\.\d+)?)\s*%/);
+const ed=Math.min(100,(lv?lv[1]:0)+(cg||pc?10:0));
+$("edu").innerHTML="Highest qualification: <b>"+(lv?lv[0]:"Not detected")+"</b><br>"+(cg?"CGPA/GPA: "+cg[1]:pc?"Percentage: "+pc[1]+"%":"No CGPA or percentage found");
+const cp=Math.round((6-lack.length)/6*100),tot=Math.round(p*.5+es*.2+ed*.15+cp*.15);
+$("dash").innerHTML="<div style='display:flex;align-items:center;gap:16px;margin-bottom:8px'><div class='ring' style='--p:"+tot+"'><i>"+tot+"</i></div><div><b>Overall resume score: "+tot+"/100</b><div class='note'>"+(tot>=75?"Excellent":tot>=50?"Good":"Needs work")+"</div></div></div>"+bar("Skill match",p)+bar("Experience",es)+bar("Education",ed)+bar("Completeness",cp);
+RES={role,tot,p,es,ed,cp,m,x,o:r.filter(s=>!m.includes(s)),cs:cs.slice(0,3),recs:recs.map(strip),exp:strip($("exp").innerHTML),edu:strip($("edu").innerHTML)};
+REPORT="RESUME ANALYSIS REPORT\nJob role: "+role+"\nOverall resume score: "+tot+"/100\nSkill match: "+p+"% ("+m.length+" of "+(m.length+x.length)+")\nExperience score: "+es+"%\nEducation score: "+ed+"%\nCompleteness: "+cp+"%\n\nMatched skills: "+(m.join(", ")||"None")+"\nMissing skills: "+(x.join(", ")||"None")+"\nOther skills: "+(r.filter(s=>!m.includes(s)).join(", ")||"None")+"\n\nTop career suggestions:\n"+(cs[0][2]?cs.slice(0,3).map(c=>"- "+c[0]+" ("+c[2]+"%)").join("\n"):"- None")+"\n\nRecommendations:\n"+(recs.length?recs.map(s=>"- "+strip(s)).join("\n"):"- None")+"\n\nExperience: "+strip($("exp").innerHTML)+"\nEducation: "+strip($("edu").innerHTML)+"\n";
+}
+let RES=null;
+function cv(w,h,fn){const c=document.createElement("canvas");c.width=w;c.height=h;fn(c.getContext("2d"));return c.toDataURL("image/png")}
+function makePDF(){
+const {jsPDF}=window.jspdf,d=new jsPDF({unit:"mm",format:"a4"}),R=RES,B=[26,79,196],G=[18,163,107],RD=[229,72,77],GR=[90,96,120],K=[40,40,50];
+const T=(s,x,y,o)=>d.text(s,x,y,o);
+const sec=(t,x,y,w)=>{d.setFont("helvetica","bold");d.setFontSize(11);d.setTextColor(...B);T(t,x,y);d.setDrawColor(...B);d.setLineWidth(.6);d.line(x,y+1.6,x+w,y+1.6);d.setFont("helvetica","normal");d.setFontSize(8.5);d.setTextColor(...K);return y+7};
+const lines=(a,x,y,w,c)=>{const l=a.flatMap(s=>d.splitTextToSize(s,w));d.setTextColor(...(c||K));T(l,x,y);return y+l.length*4+2};
+const bar=(l,v,x,y)=>{d.setFont("helvetica","normal");d.setTextColor(...K);d.setFontSize(7);T(l,x,y);d.setFillColor(213,219,238);d.rect(x+38,y-2.8,40,3.2,"F");d.setFillColor(...B);d.rect(x+38,y-2.8,40*v/100,3.2,"F");d.setFontSize(8);T(v+"%",x+92,y,{align:"right"});return y+6.5};
+d.setFillColor(243,246,252);d.rect(0,0,210,297,"F");
+d.setFillColor(...B);d.rect(0,0,210,40,"F");d.rect(0,287,210,10,"F");
+d.setTextColor(255,255,255);d.setFont("helvetica","bold");d.setFontSize(27);T("AI RESUME ANALYZER",105,18,{align:"center"});
+d.setFont("helvetica","normal");d.setFontSize(11);T("Resume Analysis Report  |  Target role: "+R.role,105,27,{align:"center"});
+d.setFontSize(8.5);T("Generated on "+new Date().toLocaleDateString(),105,34,{align:"center"});
+d.setFont("helvetica","bold");d.setFontSize(9);T("AI-BASED RESUME SKILL ANALYZER  |  Resume Analysis Report",105,293.2,{align:"center"});
+let y=sec("OVERALL SCORE",10,52,92);
+d.addImage(cv(300,300,g=>{g.lineWidth=36;g.strokeStyle="#d5dbee";g.beginPath();g.arc(150,150,118,0,7);g.stroke();g.strokeStyle="#1a4fc4";g.beginPath();g.arc(150,150,118,-Math.PI/2,-Math.PI/2+R.tot/100*6.2832);g.stroke()}),"PNG",10,y-1,30,30);
+d.setFont("helvetica","bold");d.setFontSize(17);d.setTextColor(...B);T(String(R.tot),25,y+15.5,{align:"center"});
+d.setFontSize(12);T(R.tot>=75?"Excellent":R.tot>=50?"Good":"Needs work",46,y+8);
+d.setFont("helvetica","normal");d.setFontSize(8.5);lines(["Score out of 100","Role: "+R.role],46,y+13,56);
+y+=33;
+y=sec("SKILL MATCH ANALYSIS",10,y,92);
+const lst=(t,a,c)=>{d.setFont("helvetica","bold");d.setTextColor(...c);T(t+" ("+a.length+")",10,y);d.setFont("helvetica","normal");y=lines([a.join(", ")||"None"],10,y+4.5,92,c)};
+lst("Matched skills",R.m,G);lst("Missing skills",R.x,RD);lst("Other skills found",R.o.slice(0,15),GR);
+y=sec("EXPERIENCE ANALYSIS",10,y+2,92);y=lines(R.exp.split("; "),10,y,92);
+y=sec("EDUCATION ANALYSIS",10,y+2,92);y=lines(R.edu.split("; "),10,y,92);
+let z=sec("DATA ANALYSIS",108,52,92);
+d.addImage(cv(300,300,g=>{const t=R.m.length+R.x.length||1;[[R.m.length,"#12a36b"],[R.x.length,"#e5484d"]].reduce((a,[n,c])=>{const e=a+n/t*6.2832;g.fillStyle=c;g.beginPath();g.moveTo(150,150);g.arc(150,150,140,a,e);g.fill();return e},-1.5708)}),"PNG",108,z-1,34,34);
+d.setFontSize(8.5);d.setTextColor(...K);d.setFillColor(...G);d.rect(148,z+6,3,3,"F");T("Matched: "+R.m.length,153,z+8.5);d.setFillColor(...RD);d.rect(148,z+13,3,3,"F");T("Missing: "+R.x.length,153,z+15.5);
+z+=39;
+z=bar("Skill match",R.p,108,z);z=bar("Experience",R.es,108,z);z=bar("Education",R.ed,108,z);z=bar("Completeness",R.cp,108,z);
+z=sec("CAREER SUGGESTIONS",108,z+3,92);
+if(R.cs[0][2])R.cs.forEach(c=>{z=bar(c[0],c[2],108,z)});else z=lines(["No known skills detected."],108,z,92);
+z=sec("AI RECOMMENDATIONS",108,z+3,92);d.setFontSize(8.5);
+const rc=R.recs.slice(0,8).map(s=>"- "+s);if(R.recs.length>8)rc.push("+ "+(R.recs.length-8)+" more");
+z=lines(rc.length?rc:["None. All required skills are covered."],108,z,92);
+let c=sec("CONCLUSION",10,Math.max(y,z)+3,190);
+lines(["The resume scored "+R.tot+"/100 for the role of "+R.role+", matching "+R.p+"% of its required skills. "+(R.x.length?"To improve the match, focus on learning: "+R.x.slice(0,6).join(", ")+".":"All required skills for this role are covered.")+(R.cs[0][2]?" The closest career fit based on the skills found is "+R.cs[0][0]+".":"")+" This report is generated automatically from keyword analysis and is intended as guidance only."],10,c,190);
+return d.output("blob")}
+$("dl").onclick=async()=>{const msg=$("dlmsg");try{const d=window.claude&&await claude.use("downloads");if(!d){const b=window.jspdf?makePDF():new Blob([REPORT],{type:"text/plain"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=window.jspdf?"resume-analysis-report.pdf":"resume-analysis-report.txt";document.body.appendChild(a);a.click();a.remove();msg.textContent="Report downloaded.";return}await d.save(window.jspdf?{filename:"resume-analysis-report.pdf",data:makePDF()}:{filename:"resume-analysis-report.txt",data:REPORT});msg.textContent="Report saved."}catch(e){msg.textContent=e&&e.code==="declined"?"Download cancelled.":"Couldn’t save the report."}};
+document.getElementById("go").onclick=()=>{
+if(!document.getElementById("resume").value.trim()){alert("Upload your resume first (or click Load sample).");return}
+const r=find(document.getElementById("resume").value),j=ROLES[document.getElementById("jd").value]||[];
+if(!j.length){alert("Select a job role first.");return}
+const m=j.filter(s=>r.includes(s)),x=j.filter(s=>!r.includes(s)),e=r.filter(s=>!j.includes(s));
+const p=Math.round(m.length/j.length*100);
+document.getElementById("result").style.display="block";
+document.getElementById("ring").style.setProperty("--p",p);
+document.getElementById("pct").textContent=p+"%";
+document.getElementById("verdict").textContent=p>=75?"Strong match":p>=50?"Good potential":"Needs improvement";
+document.getElementById("count").textContent=m.length+" of "+j.length+" required skills found";
+chips("matched",m,"ok");chips("missing",x,"no");chips("extra",e,"extra");extras(m,x,p);
+document.getElementById("result").scrollIntoView({behavior:"smooth",block:"nearest"});
+};
+document.getElementById("jd").onchange=function(){const s=ROLES[this.value];document.getElementById("rolenote").textContent=s?"Required skills: "+s.join(", "):""};
+function classify(t){const s=t.toLowerCase(),n=re=>(s.match(re)||[]).length;
+const has=[/[\w.+-]+@[\w-]+\.[\w.]+|\b\d{10}\b|\+\d[\d\s-]{8,}/,/education|academic|qualification|b\.?tech|bachelor|degree|university|college/,/skills?\b|technologies|proficien/,/experience|internship|employment|work history/,/projects?\b/,/certif/,/objective|summary|profile|about me/].map(re=>re.test(s));
+if(has.filter(Boolean).length>=4&&(has[2]||has[3]||has[4]))return null;
+if(n(/invoice|bill to|amount due|subtotal|total amount|receipt|payment due|\bqty\b/g)>=2)return"Invalid Document.";
+if(n(/marksheet|mark sheet|marks obtained|grade card|roll no|seat no|statement of marks|total marks|examination|result/g)>=2)return"This document is not a resume.";
+if(n(/this is to certify|certificate of|awarded to|successfully completed|certificate/g)>=1)return"Resume information not found.";
+if(n(/assignment|submitted (by|to)|submission|question \d|\bq\d|lab manual|experiment|course code|faculty|abstract|chapter \d/g)>=2)return"Invalid Resume Detected.";
+return"Resume structure not detected."}
+const fi=$("pdf"),st=$("pdfstatus"),eb=$("pdferr");
+const LIST=["Personal Information","Educational Qualifications","Technical Skills","Projects","Work Experience","Certifications"];
+const fail=m=>{$("resume").value="";st.textContent="No valid resume loaded";eb.hidden=false;eb.innerHTML="<b>⚠️ "+m+"</b>"};
+const invalid=(why,kind)=>{fail("Invalid Document!");eb.innerHTML+="<div style='margin:6px 0'>"+why+"</div><div>The uploaded "+kind+" does not appear to be a valid resume. Please upload a valid resume containing details such as:</div><ul style='margin:6px 0;padding-left:20px'>"+LIST.map(x=>"<li>"+x+"</li>").join("")+"</ul><div>Supported formats: PDF, DOCX, JPG and PNG.<br>Please try again with a valid resume.</div>"};
+fi.onchange=async()=>{const f=fi.files[0];if(!f)return;eb.hidden=true;
+const isDoc=/\.docx$/i.test(f.name),isImg=/\.(png|jpe?g)$/i.test(f.name)||/^image\/(png|jpeg)$/.test(f.type),isPdf=f.type==="application/pdf"||/\.pdf$/i.test(f.name);
+if(!isDoc&&!isPdf&&!isImg){fail("Unsupported file. Please upload a PDF, DOCX, JPG or PNG.");fi.value="";return}
+if(!f.size){fail("Empty Document.");fi.value="";return}
+st.textContent="Reading "+f.name+"…";
+try{let t="",info="";
+if(isDoc){if(!window.mammoth)throw{name:"NoLib"};t=((await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value||"").trim();if(t.length<20){fail("Empty Document.");return}info=f.name}
+else if(isImg){const sm=window.claude&&await claude.use("sample");if(!sm||!(await sm.limits()).images)throw{name:"NoAI"};st.textContent="Reading image with AI…";t=((await sm("Transcribe all the text in this image exactly as written, keeping the line breaks. If the image has no readable text, reply with exactly NO_TEXT. Output only the transcribed text.",{images:[f],modelTier:"quick"})).text||"").trim();if(t.length<20||t==="NO_TEXT"){fail("Unable to extract text. Please upload a clearer image or a text-based PDF.");return}info=f.name}
+else{if(!window.pdfjsLib)throw{name:"NoLib"};pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let img=false;
+for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();t+=c.items.map(x=>x.str).join(" ")+"\n"}
+t=t.trim();
+if(t.length<20){for(let i=1;i<=pdf.numPages&&!img;i++){const o=await(await pdf.getPage(i)).getOperatorList();img=o.fnArray.some(k=>k===pdfjsLib.OPS.paintImageXObject||k===pdfjsLib.OPS.paintInlineImageXObject||k===pdfjsLib.OPS.paintJpegXObject)}
+fail(img?"Unable to extract text. Please upload a text-based PDF or use OCR.":"Empty Document.");return}
+info=f.name+" ("+pdf.numPages+" page"+(pdf.numPages>1?"s":"")+")"}
+const why=classify(t);if(why){invalid(why,isImg?"image":isDoc?"document":"PDF");return}
+$("resume").value=t;st.textContent="Loaded "+info+". Now click Analyze."}
+catch(e){const c=e&&e.code;fail(e&&e.name==="PasswordException"?"Please upload an unlocked PDF.":e&&e.name==="NoLib"?"The file reader failed to load. Please refresh and try again.":e&&e.name==="NoAI"||c==="not_granted"||c==="images_unavailable"||c==="sampling_disabled"?"Image reading isn’t available or wasn’t allowed. Please upload a PDF or DOCX instead.":c==="image_rejected"?"That image couldn’t be read. Please try a different file.":c==="rate_limited"?"Too many requests. Please try again later.":isImg?"Unable to read this image.":isDoc?"Unable to read this document.":"Unable to read this PDF.")}
+finally{fi.value=""}};
+document.getElementById("sample").onclick=()=>{eb.hidden=true;st.textContent="Sample resume loaded";
+document.getElementById("resume").value="Computer Science student with projects in Python, Flask and SQL. Built a sentiment classifier using scikit-learn and pandas. Comfortable with Git, HTML, CSS and JavaScript. Strong communication and teamwork.";
+document.getElementById("jd").value="AI/ML Engineer";document.getElementById("jd").onchange();
+};
+</script>
+</body>
+</html>
